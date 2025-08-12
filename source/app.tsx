@@ -12,6 +12,7 @@ export default function App({repoPath}: Props) {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [selectedIndex, setSelectedIndex] = useState(0);
+	const [windowStart, setWindowStart] = useState(0);
 	const [repoInfo, setRepoInfo] = useState<RepoInfo | null>(null);
 
 	const banner = `
@@ -60,12 +61,26 @@ export default function App({repoPath}: Props) {
 			loadCommits();
 		}
 
-		if (key.upArrow && selectedIndex > 0) {
-			setSelectedIndex(selectedIndex - 1);
+		const windowSize = 12;
+
+		if (key.upArrow) {
+			if (selectedIndex > 0) {
+				const newIndex = selectedIndex - 1;
+				setSelectedIndex(newIndex);
+				if (newIndex < windowStart) {
+					setWindowStart(windowStart - 1);
+				}
+			}
 		}
 
-		if (key.downArrow && selectedIndex < commits.length - 1) {
-			setSelectedIndex(selectedIndex + 1);
+		if (key.downArrow) {
+			if (selectedIndex < commits.length - 1) {
+				const newIndex = selectedIndex + 1;
+				setSelectedIndex(newIndex);
+				if (newIndex >= windowStart + windowSize) {
+					setWindowStart(windowStart + 1);
+				}
+			}
 		}
 	});
 
@@ -173,36 +188,39 @@ export default function App({repoPath}: Props) {
 							Recent Commits{' '}
 						</Text>
 						<Box flexDirection="column" marginTop={1}>
-							{commits.slice(0, 12).map((commit, index) => (
-								<Box key={commit.hash} paddingX={1}>
-									<Box width={3}>
-										{index > 0 && <Text color="gray">│</Text>}
-										<Text
-											color={
-												commit.graphSymbol === '●'
-													? 'green'
-													: commit.graphSymbol === '◎'
-													? 'yellow'
-													: 'cyan'
-											}
-										>
-											{commit.graphSymbol}
+							{commits.slice(windowStart, windowStart + 12).map((commit, idx) => {
+								const index = windowStart + idx;
+								return (
+									<Box key={commit.hash} paddingX={1}>
+										<Box width={3}>
+											{index > 0 && <Text color="gray">│</Text>}
+											<Text
+												color={
+													commit.graphSymbol === '●'
+														? 'green'
+														: commit.graphSymbol === '◎'
+														? 'yellow'
+														: 'cyan'
+												}
+											>
+												{commit.graphSymbol}
+											</Text>
+										</Box>
+										<Text color={index === selectedIndex ? 'white' : 'yellow'}>
+											●
+										</Text>
+										<Text color={index === selectedIndex ? 'white' : 'gray'}>
+											{' '}
+											{commit.shortHash}
+										</Text>
+										<Text color={index === selectedIndex ? 'white' : 'white'}>
+											{' '}
+											{commit.message.slice(0, 40)}
+											{commit.message.length > 40 ? '...' : ''}
 										</Text>
 									</Box>
-									<Text color={index === selectedIndex ? 'white' : 'yellow'}>
-										●
-									</Text>
-									<Text color={index === selectedIndex ? 'white' : 'gray'}>
-										{' '}
-										{commit.shortHash}
-									</Text>
-									<Text color={index === selectedIndex ? 'white' : 'white'}>
-										{' '}
-										{commit.message.slice(0, 40)}
-										{commit.message.length > 40 ? '...' : ''}
-									</Text>
-								</Box>
-							))}
+								);
+							})}
 						</Box>
 					</Box>
 
