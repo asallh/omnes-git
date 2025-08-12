@@ -7,6 +7,8 @@ export interface Commit {
 	author: string;
 	date: Date;
 	relativeDate: string;
+	parent: string[];
+	graphSymbol: string;
 }
 
 export interface RepoInfo {
@@ -19,23 +21,45 @@ export async function getCommits(
 	limit = 20,
 ): Promise<Commit[]> {
 	const git = simpleGit(repoPath);
-	try {
-		const log = await git.log({maxCount: limit});
 
-		return log.all.map(commit => ({
-			hash: commit.hash,
-			shortHash: commit.hash.substring(0, 7),
-			message: commit.message,
-			author: commit.author_name,
-			email: commit.author_email,
-			date: new Date(commit.date),
-			relativeDate: getRelativeTime(new Date(commit.date)),
-		}));
+	try {
+		const log = await git.log({
+			maxCount: limit,
+			format: {
+				hash: '%H',
+				date: '%ai',
+				message: '%s',
+				author_name: '%an',
+				author_email: '%ae',
+				parents: '%P',
+			},
+		});
+
+		return log.all.map((commit, index) => {
+			const parents = commit.parents ? commit.parents.split(' ') : [];
+			const isFirstCommit = index === 0;
+			const isMerge = parents.length > 1;
+
+			let graphSymbol = '●';
+			if (isFirstCommit) graphSymbol = '●'; 
+			else if (isMerge) graphSymbol = '◎'; 
+			else graphSymbol = '○'; 
+
+			return {
+				hash: commit.hash,
+				shortHash: commit.hash.substring(0, 7),
+				message: commit.message,
+				author: commit.author_name,
+				date: new Date(commit.date),
+				relativeDate: getRelativeTime(new Date(commit.date)),
+				parent: parents,
+				graphSymbol,
+			};
+		});
 	} catch (error) {
 		throw new Error(`Failed to load commits: ${(error as Error).message}`);
 	}
 }
-
 function getRelativeTime(date: Date): string {
 	const now = new Date();
 	const diffMs = now.getTime() - date.getTime();

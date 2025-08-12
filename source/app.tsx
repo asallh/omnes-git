@@ -16,14 +16,14 @@ export default function App({repoPath}: Props) {
 
 	const banner = `
 	
- $$$$$$\  $$\      $$\ $$\   $$\ $$$$$$$$\  $$$$$$\           $$$$$$\  $$$$$$\ $$$$$$$$\ 
-$$  __$$\ $$$\    $$$ |$$$\  $$ |$$  _____|$$  __$$\         $$  __$$\ \_$$  _|\__$$  __|
-$$ /  $$ |$$$$\  $$$$ |$$$$\ $$ |$$ |      $$ /  \__|        $$ /  \__|  $$ |     $$ |   
-$$ |  $$ |$$\$$\$$ $$ |$$ $$\$$ |$$$$$\    \$$$$$$\  $$$$$$\ $$ |$$$$\   $$ |     $$ |   
-$$ |  $$ |$$ \$$$  $$ |$$ \$$$$ |$$  __|    \____$$\ \______|$$ |\_$$ |  $$ |     $$ |   
-$$ |  $$ |$$ |\$  /$$ |$$ |\$$$ |$$ |      $$\   $$ |        $$ |  $$ |  $$ |     $$ |   
- $$$$$$  |$$ | \_/ $$ |$$ | \$$ |$$$$$$$$\ \$$$$$$  |        \$$$$$$  |$$$$$$\    $$ |   
- \______/ \__|     \__|\__|  \__|\________| \______/          \______/ \______|   \__|   
+		$$$$$$\  $$\      $$\ $$\   $$\ $$$$$$$$\  $$$$$$\           $$$$$$\  $$$$$$\ $$$$$$$$\ 
+		$$  __$$\ $$$\    $$$ |$$$\  $$ |$$  _____|$$  __$$\         $$  __$$\ \_$$  _|\__$$  __|
+		$$ /  $$ |$$$$\  $$$$ |$$$$\ $$ |$$ |      $$ /  \__|        $$ /  \__|  $$ |     $$ |   
+		$$ |  $$ |$$\$$\$$ $$ |$$ $$\$$ |$$$$$\    \$$$$$$\  $$$$$$\ $$ |$$$$\   $$ |     $$ |   
+		$$ |  $$ |$$ \$$$  $$ |$$ \$$$$ |$$  __|    \____$$\ \______|$$ |\_$$ |  $$ |     $$ |   
+		$$ |  $$ |$$ |\$  /$$ |$$ |\$$$ |$$ |      $$\   $$ |        $$ |  $$ |  $$ |     $$ |   
+		$$$$$$  |$$ | \_/ $$ |$$ | \$$ |$$$$$$$$\ \$$$$$$  |        \$$$$$$  |$$$$$$\    $$ |   
+		\______/ \__|     \__|\__|  \__|\________| \______/          \______/ \______|   \__|   
                                                                                          
                                                                                          
                                                                                          
@@ -52,15 +52,12 @@ $$ |  $$ |$$ |\$  /$$ |$$ |\$$$ |$$ |      $$\   $$ |        $$ |  $$ |  $$ |   
 	};
 
 	useInput((input, key) => {
-		if (input === 'q') {
+		if (input === 'q' || key.escape) {
 			process.exit(0);
 		}
 
 		if (input === 'r') {
 			loadCommits();
-		}
-		if (input === 'q' || 'esc') {
-			process.exit(0);
 		}
 
 		if (key.upArrow && selectedIndex > 0) {
@@ -74,29 +71,55 @@ $$ |  $$ |$$ |\$  /$$ |$$ |\$$$ |$$ |      $$\   $$ |        $$ |  $$ |  $$ |   
 
 	if (loading) {
 		return (
-			<Box justifyContent="center" alignItems="center" minHeight="5">
-				<Box flexDirection="column" alignItems="center">
+			<Box
+				justifyContent="center"
+				alignItems="center"
+				height="100%"
+				padding={2}
+			>
+				<Box
+					flexDirection="column"
+					alignItems="center"
+					borderStyle="double"
+					borderColor="blue"
+					padding={2}
+				>
 					<Spinner type="dots" />
-					<Text>
-						{commits.length > 0 ? 'Refreshing...' : 'Loading Commits ...'}
+					<Text color="blue" bold>
+						{' '}
+						{commits.length > 0
+							? 'Refreshing commits...'
+							: 'Loading repository...'}
 					</Text>
-					{commits.length > 0 && <Text dimColor>Press 'q' to cancel</Text>}
+					<Text color="gray">Please wait</Text>
 				</Box>
 			</Box>
 		);
 	}
 
+	// Better error state
 	if (error) {
 		return (
-			<Box flexDirection="column" alignItems="center" minHeight={10}>
-				<Box borderStyle="round" borderColor="red" padding={1}>
-					<Box flexDirection="column" alignItems="center">
-						<Text color="red" bold>
-							❌ Error
-						</Text>
+			<Box
+				justifyContent="center"
+				alignItems="center"
+				height="100%"
+				padding={2}
+			>
+				<Box
+					flexDirection="column"
+					alignItems="center"
+					borderStyle="double"
+					borderColor="red"
+					padding={2}
+				>
+					<Text color="red" bold>
+						⚠️ Error Loading Repository
+					</Text>
+					<Box marginY={1} paddingX={2} borderLeft={true} borderColor="red">
 						<Text color="red">{error}</Text>
-						<Text dimColor>Press 'r' to retry or 'q' to quit</Text>
 					</Box>
+					<Text color="gray">Press 'r' to retry • 'q' to quit</Text>
 				</Box>
 			</Box>
 		);
@@ -104,7 +127,7 @@ $$ |  $$ |$$ |\$  /$$ |$$ |\$$$ |$$ |      $$\   $$ |        $$ |  $$ |  $$ |   
 
 	return (
 		<Box flexDirection="column" minHeight={10}>
-			<Box justifyContent='center' width="100%">
+			<Box justifyContent="center" width="100%">
 				<Text color={'blue'}>{banner}</Text>
 			</Box>
 			{/* Header */}
@@ -152,6 +175,20 @@ $$ |  $$ |$$ |\$  /$$ |$$ |\$$$ |$$ |      $$\   $$ |        $$ |  $$ |  $$ |   
 						<Box flexDirection="column" marginTop={1}>
 							{commits.slice(0, 12).map((commit, index) => (
 								<Box key={commit.hash} paddingX={1}>
+									<Box width={3}>
+										{index > 0 && <Text color="gray">│</Text>}
+										<Text
+											color={
+												commit.graphSymbol === '●'
+													? 'green'
+													: commit.graphSymbol === '◎'
+													? 'yellow'
+													: 'cyan'
+											}
+										>
+											{commit.graphSymbol}
+										</Text>
+									</Box>
 									<Text color={index === selectedIndex ? 'white' : 'yellow'}>
 										●
 									</Text>
