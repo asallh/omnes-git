@@ -9,6 +9,11 @@ export interface Commit {
 	relativeDate: string;
 }
 
+export interface RepoInfo {
+	currentBranch: string;
+	totalCommits: number;
+}
+
 export async function getCommits(
 	repoPath: string,
 	limit = 20,
@@ -42,4 +47,20 @@ function getRelativeTime(date: Date): string {
 	if (diffHours > 0) return `${diffHours}h ago`;
 	if (diffMins > 0) return `${diffMins}m ago`;
 	return 'just now';
+}
+
+export async function getRepoInfo(repoPath: string): Promise<RepoInfo> {
+	const git = simpleGit(repoPath);
+
+	try {
+		const status = await git.status();
+		const log = await git.log();
+
+		return {
+			currentBranch: status.current || 'unknown',
+			totalCommits: log.total,
+		};
+	} catch (error) {
+		throw new Error(`Failed to get repo Info: ${(error as Error).message}`);
+	}
 }
