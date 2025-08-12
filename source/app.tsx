@@ -13,6 +13,16 @@ export default function App({repoPath}: Props) {
 	const [error, setError] = useState<string | null>(null);
 	const [selectedIndex, setSelectedIndex] = useState(0);
 
+	const banner = `
+		####### #     # #     # #######  #####         #####  ### ####### 
+		#     # ##   ## ##    # #       #     #       #     #  #     #    
+		#     # # # # # # #   # #       #             #        #     #    
+		#     # #  #  # #  #  # #####    #####  ##### #  ####  #     #    
+		#     # #     # #   # # #             #       #     #  #     #    
+		#     # #     # #    ## #       #     #       #     #  #     #    
+		####### #     # #     # #######  #####         #####  ###    #    																
+	`;
+
 	useEffect(() => {
 		loadCommits();
 	}, []);
@@ -35,7 +45,6 @@ export default function App({repoPath}: Props) {
 			process.exit(0);
 		}
 
-		// Navigation
 		if (key.upArrow && selectedIndex > 0) {
 			setSelectedIndex(selectedIndex - 1);
 		}
@@ -66,17 +75,15 @@ export default function App({repoPath}: Props) {
 	return (
 		<Box flexDirection="column" minHeight={10}>
 			{/* Header */}
-			<Text color="blue" bold>
-				🌿 omnes-git
-			</Text>
+			<Text>{banner}</Text>
 			<Text dimColor>Repository: {repoPath}</Text>
 
 			{/* Commits List */}
 			<Box flexDirection="column" marginTop={1}>
 				<Text bold>Recent Commits:</Text>
-				{commits.slice(0, 10).map(commit => (
+				{commits.slice(0, 10).map((commit, index) => (
 					<Box key={commit.hash} marginLeft={1}>
-						<Text color="yellow">●</Text>
+						<Text color={index === selectedIndex ? 'blue' : 'yellow'}>●</Text>
 						<Text color="gray"> {commit.shortHash}</Text>
 						<Text> {commit.message}</Text>
 						<Text dimColor> ({commit.relativeDate})</Text>
@@ -84,7 +91,7 @@ export default function App({repoPath}: Props) {
 				))}
 			</Box>
 
-			<Text dimColor>Press 'q' to quit</Text>
+			<Text dimColor>↑↓ navigate • q quit</Text>
 		</Box>
 	);
 }
