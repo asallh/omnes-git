@@ -1,5 +1,4 @@
 
-<!-- Badges -->
 ![React](https://img.shields.io/badge/React-18.2.0-blue?style=for-the-badge)
 ![Ink](https://img.shields.io/badge/Ink-CLI-blue?style=for-the-badge)
 ![Node](https://img.shields.io/badge/Node-16%2B-green?style=for-the-badge&logo=node.js)
